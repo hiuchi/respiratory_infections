@@ -4,6 +4,8 @@ library(tidyverse)
 
 figure_strip_fill <- "#F4F4F4"
 figure_strip_border <- "#D0D0D0"
+a4_landscape_width <- 11.69
+a4_landscape_height <- 8.27
 
 build_output_dir <- function(project_dir, subdir) {
   output_dir <- file.path(project_dir, "output", subdir)
@@ -169,19 +171,19 @@ plot_timecourse <- function(plot_data) {
       data = p_value_labels,
       aes(x = x, y = y, label = label),
       inherit.aes = FALSE,
-      size = 2.3
+      size = 3.1
     ) +
     facet_grid(age ~ day) +
     coord_cartesian(ylim = c(-2.75, 2.75)) +
     scale_colour_manual(values = c(mRNA = "#4C78A8", lncRNA = "#D65F5F")) +
     labs(x = NULL, y = "Log2 fold change") +
     make_figure_theme(
-      base_size = 10,
-      plot_title_size = 10,
-      axis_title_size = 10,
-      axis_text_size = 9,
-      legend_text_size = 9,
-      strip_text_size = 10
+      base_size = 12,
+      plot_title_size = 12,
+      axis_title_size = 12,
+      axis_text_size = 10,
+      legend_text_size = 11,
+      strip_text_size = 12
     ) +
     theme(
       axis.text.x = element_blank(),
@@ -235,12 +237,16 @@ flu_plot <- plot_timecourse(plot_data |> filter(infection == "Flu", !is.na(day))
 covid_plot <- plot_timecourse(plot_data |> filter(infection == "COVID", !is.na(day)))
 
 figure5 <- (flu_plot / covid_plot) +
+  plot_layout(guides = "collect") +
   plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(size = 14, face = "bold"))
+  theme(
+    legend.position = "bottom",
+    plot.tag = element_text(size = 18, face = "bold")
+  )
 
 save_figure_pdf(
   figure5,
   file.path(plot_output_dir, "figure5.pdf"),
-  figure_width = 14,
-  figure_height = 10.4
+  figure_width = a4_landscape_width,
+  figure_height = a4_landscape_height
 )
