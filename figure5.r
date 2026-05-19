@@ -139,10 +139,12 @@ make_group_result <- function(normalized_counts, sample_info, annotation, age_va
 }
 
 format_p_value <- function(p_value) {
-  if (p_value == 0) {
-    return("p < 2.2e-308")
-  }
-  paste0("p = ", format(signif(p_value, digits = 2), trim = TRUE))
+  case_when(
+    p_value < 0.0005 ~ "***",
+    p_value < 0.005 ~ "**",
+    p_value < 0.05 ~ "*",
+    TRUE ~ "N.S."
+  )
 }
 
 build_p_value_labels <- function(plot_data) {
@@ -171,7 +173,8 @@ plot_timecourse <- function(plot_data) {
       data = p_value_labels,
       aes(x = x, y = y, label = label),
       inherit.aes = FALSE,
-      size = 3.1
+      size = 4,
+      fontface = "bold"
     ) +
     facet_grid(age ~ day) +
     coord_cartesian(ylim = c(-2.75, 2.75)) +
