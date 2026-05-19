@@ -241,7 +241,7 @@ covid_plot <- plot_timecourse(plot_data |> filter(infection == "COVID", !is.na(d
 
 figure5 <- (flu_plot / covid_plot) +
   plot_layout(guides = "collect") +
-  plot_annotation(tag_levels = "A") &
+  plot_annotation(tag_levels = list(c("A  Flu", "B  COVID"))) &
   theme(
     legend.position = "bottom",
     plot.tag = element_text(size = 18, face = "bold")
