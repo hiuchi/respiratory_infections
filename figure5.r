@@ -220,7 +220,7 @@ results <- purrr::pmap_dfr(
 ) |>
   mutate(
     age = factor(age, levels = c("Young", "Aged")),
-    infection = factor(infection, levels = c("Flu", "COVID")),
+    infection = factor(infection, levels = c("Mock", "Flu", "COVID")),
     day = factor(day, levels = c("6h", "1d", "2d", "4d", "6d", "8d", "10d")),
     type = factor(type, levels = c("mRNA", "lncRNA", "Others"))
   )
@@ -231,10 +231,10 @@ write_csv(results, build_data_output(project_dir, "lncRNA_timecourse_results.csv
 plot_data <- results |>
   filter(type %in% c("mRNA", "lncRNA"))
 
-covid_plot <- plot_timecourse(plot_data |> filter(infection == "COVID", !is.na(day)))
 flu_plot <- plot_timecourse(plot_data |> filter(infection == "Flu", !is.na(day)))
+covid_plot <- plot_timecourse(plot_data |> filter(infection == "COVID", !is.na(day)))
 
-figure5 <- (covid_plot / flu_plot) +
+figure5 <- (flu_plot / covid_plot) +
   plot_annotation(tag_levels = "A") &
   theme(plot.tag = element_text(size = 14, face = "bold"))
 

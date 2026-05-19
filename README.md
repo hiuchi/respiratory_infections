@@ -1,6 +1,6 @@
 # COVID RNA-seq figure analysis
 
-This repository contains R scripts for the COVID/Flu/Mock RNA-seq figure analysis.
+This repository contains R scripts for the Mock/Flu/COVID RNA-seq figure analysis.
 
 ## Contents
 
