@@ -164,7 +164,7 @@ build_p_value_labels <- function(plot_data) {
     ungroup()
 }
 
-plot_timecourse <- function(plot_data) {
+plot_timecourse <- function(plot_data, panel_label) {
   p_value_labels <- build_p_value_labels(plot_data)
 
   ggplot(plot_data, aes(x = type, y = log2FoldChange, colour = type)) +
@@ -176,21 +176,23 @@ plot_timecourse <- function(plot_data) {
       size = 4,
       fontface = "bold"
     ) +
-    facet_grid(age ~ day) +
+    facet_grid(age ~ day, drop = FALSE) +
     coord_cartesian(ylim = c(-2.75, 2.75)) +
     scale_colour_manual(values = c(mRNA = "#4C78A8", lncRNA = "#D65F5F")) +
-    labs(x = NULL, y = "Log2 fold change") +
+    labs(x = NULL, y = "Log2 fold change", title = panel_label) +
     make_figure_theme(
       base_size = 12,
-      plot_title_size = 12,
+      plot_title_size = 18,
       axis_title_size = 12,
       axis_text_size = 10,
       legend_text_size = 11,
-      strip_text_size = 12
+      strip_text_size = 12,
+      plot_title_position = "panel"
     ) +
     theme(
       axis.text.x = element_blank(),
-      legend.position = "bottom"
+      legend.position = "bottom",
+      plot.title = element_text(size = 18, face = "bold", margin = margin(b = 4))
     )
 }
 
@@ -236,16 +238,11 @@ write_csv(results, build_data_output(project_dir, "lncRNA_timecourse_results.csv
 plot_data <- results |>
   filter(type %in% c("mRNA", "lncRNA"))
 
-flu_plot <- plot_timecourse(plot_data |> filter(infection == "Flu", !is.na(day)))
-covid_plot <- plot_timecourse(plot_data |> filter(infection == "COVID", !is.na(day)))
+flu_plot <- plot_timecourse(plot_data |> filter(infection == "Flu", !is.na(day)), "A  Flu")
+covid_plot <- plot_timecourse(plot_data |> filter(infection == "COVID", !is.na(day)), "B  COVID")
 
-figure5 <- (flu_plot / covid_plot) +
-  plot_layout(guides = "collect") +
-  plot_annotation(tag_levels = list(c("A  Flu", "B  COVID"))) &
-  theme(
-    legend.position = "bottom",
-    plot.tag = element_text(size = 18, face = "bold")
-  )
+figure5 <- ((flu_plot / covid_plot) + plot_layout(guides = "collect")) &
+  theme(legend.position = "bottom")
 
 save_figure_pdf(
   figure5,
