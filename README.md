@@ -1,4 +1,4 @@
-# COVID RNA-seq figure analysis
+# Transcriptome analysis of respiratory infections
 
 This repository contains R scripts for the Mock/Flu/COVID RNA-seq figure analysis.
 
