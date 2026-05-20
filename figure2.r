@@ -115,8 +115,8 @@ condition_order <- c("Mock", "Flu", "COVID")
 series_order <- c("Young", "Aged")
 position_gaps <- list(time = 1, series = 2, condition = 5)
 
-figure_width <- 8.27
-figure_height <- 11.69
+figure_width <- 14
+figure_height <- 7.8
 
 read_multiqc_tsv <- function(filename) {
   readr::read_tsv(
@@ -370,7 +370,7 @@ complexity_correlation <- cor(
 
 p_depth <- ggplot(star_summary, aes(x_position, total_reads_m, fill = condition)) +
   geom_col(width = 0.85, colour = NA) +
-  facet_grid(cols = vars(condition), scales = "free_x", space = "free_x") +
+  facet_grid(cols = vars(condition), scales = "free_x") +
   scale_fill_manual(values = condition_palette) +
   panel_x_scale_hidden +
   guides(fill = "none") +
@@ -385,7 +385,7 @@ p_depth <- ggplot(star_summary, aes(x_position, total_reads_m, fill = condition)
 
 p_alignment <- ggplot(star_summary, aes(x_position, uniquely_mapped_percent, colour = condition)) +
   geom_point(size = 1.8, alpha = 0.9) +
-  facet_grid(cols = vars(condition), scales = "free_x", space = "free_x") +
+  facet_grid(cols = vars(condition), scales = "free_x") +
   scale_colour_manual(values = condition_palette) +
   panel_x_scale_hidden +
   guides(colour = "none") +
@@ -466,8 +466,14 @@ p_coverage <- ggplot() +
   ) +
   theme(legend.position = "none")
 
-figure2 <- (p_depth / p_alignment / p_origin / (p_complexity | p_coverage)) +
-  plot_layout(heights = c(1.1, 1.1, 1.4, 1.1), guides = "collect") &
+left_column <- (p_depth / p_alignment) +
+  plot_layout(heights = c(1.25, 1))
+
+right_column <- (p_origin / (p_complexity | p_coverage)) +
+  plot_layout(heights = c(1.25, 1))
+
+figure2 <- (left_column | right_column) +
+  plot_layout(widths = c(1, 2), guides = "collect") &
   theme(legend.position = "top")
 
 save_figure_pdf(figure2, output_pdf, figure_width, figure_height)
