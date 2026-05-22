@@ -1,0 +1,13 @@
+.DS_Store
+Rplots.pdf
+tmp/
+tmp_test_ggsave.pdf
+output/
+
+.nextflow*
+work/
+res/
+files/mouse_virus.fa
+files/mouse_virus.gff3
+files/mouse_virus.gtf
+files/mouse_virus.fixed.gtf
