@@ -107,7 +107,7 @@ make_figure_theme <- function(
     )
 }
 
-project_dir <- "/Users/hiuchi/Dropbox/Research/covid/260309_analysis"
+project_dir <- "/path/to/project"
 data_dir <- file.path(project_dir, "multiqc_data")
 output_pdf <- build_figure_output(project_dir, "figure2.pdf")
 

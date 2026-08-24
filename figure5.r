@@ -260,10 +260,10 @@ plot_timecourse <- function(plot_data, panel_label) {
     )
 }
 
-project_dir <- "/Users/hiuchi/Dropbox/Research/covid/260309_analysis"
+project_dir <- "/path/to/project"
 
-input_dir <- "/Users/hiuchi/Dropbox/Research/covid/260305_analysis/res/star_salmon/deseq2_qc"
-annotation_gff3 <- "/Users/hiuchi/Dropbox/Research/covid/260305_analysis/files/mouse_virus.gff3"
+input_dir <- "/path/to/deseq2_qc"
+annotation_gff3 <- "/path/to/mouse_virus.gff3"
 plot_output_dir <- build_output_dir(project_dir, "plots")
 
 load(file.path(input_dir, "deseq2.dds.RData"))

@@ -75,9 +75,9 @@ save_figure_pdf <- function(plot_obj, output_pdf, figure_width, figure_height) {
   )
 }
 
-tpm_file <- "/Users/hiuchi/Dropbox/Research/covid/260305_analysis/res/star_salmon/salmon.merged.gene_tpm.tsv"
-input_dir <- "/Users/hiuchi/Dropbox/Research/covid/260305_analysis/res/star_salmon/deseq2_qc"
-project_dir <- "/Users/hiuchi/Dropbox/Research/covid/260309_analysis"
+tpm_file <- "/path/to/salmon.merged.gene_tpm.tsv"
+input_dir <- "/path/to/deseq2_qc"
+project_dir <- "/path/to/project"
 target_time <- "2d"
 max_padj <- 0.05
 min_base_mean <- 20

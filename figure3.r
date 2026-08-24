@@ -100,8 +100,8 @@ make_figure_theme <- function(
     )
 }
 
-input_dir <- "/Users/hiuchi/Dropbox/Research/covid/260305_analysis/res/star_salmon/deseq2_qc"
-project_dir <- "/Users/hiuchi/Dropbox/Research/covid/260309_analysis"
+input_dir <- "/path/to/deseq2_qc"
+project_dir <- "/path/to/project"
 output_pdf <- build_figure_output(project_dir, "figure3.pdf")
 figure_width <- 15
 figure_height <- 11.2
