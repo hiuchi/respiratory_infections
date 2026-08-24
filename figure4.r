@@ -75,9 +75,9 @@ save_figure_pdf <- function(plot_obj, output_pdf, figure_width, figure_height) {
   )
 }
 
-tpm_file <- "/Users/hiuchi/Dropbox/Research/covid/260305_analysis/res/star_salmon/salmon.merged.gene_tpm.tsv"
-input_dir <- "/Users/hiuchi/Dropbox/Research/covid/260305_analysis/res/star_salmon/deseq2_qc"
-project_dir <- "/Users/hiuchi/Dropbox/Research/covid/260309_analysis"
+project_dir <- "/path/to/data"
+input_dir <- file.path(project_dir, "res", "star_salmon", "deseq2_qc")
+tpm_file <- file.path(project_dir, "res", "star_salmon", "salmon.merged.gene_tpm.tsv")
 target_time <- "2d"
 max_padj <- 0.05
 min_base_mean <- 20
@@ -106,7 +106,7 @@ if (output_pdf == "") {
 }
 
 figure_width <- 14
-figure_height <- 12.5
+figure_height <- 14.5
 
 plot_title_size <- 12.5
 axis_title_size <- 11
@@ -129,7 +129,7 @@ heatmap_palette <- c(
 )
 
 module_titles <- c(
-  virus = "Flu-COVID difference genes",
+  virus = "Influenza-COVID-19 difference genes",
   age = "Young-Aged difference genes"
 )
 
@@ -1024,7 +1024,7 @@ heatmap_legends <- wrap_elements(
 bottom_row <- p_virus | p_age
 
 figure4 <- top_heatmaps / heatmap_legends / bottom_row +
-  plot_layout(heights = c(1.02, 0.18, 1.3)) +
+  plot_layout(heights = c(1.3, 0.18, 1.3)) +
   plot_annotation(tag_levels = "A") &
   theme(plot.tag = element_text(size = 14, face = "bold"))
 

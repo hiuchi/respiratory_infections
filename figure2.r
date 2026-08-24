@@ -5,8 +5,8 @@ library(scales)
 figure_palettes <- list(
   infection = c(
     Mock = "#8A8A8A",
-    Flu = "#3C78B5",
-    COVID = "#D95A4E"
+    Influenza = "#3C78B5",
+    `COVID-19` = "#D95A4E"
   ),
   age = c(
     Young = "#2FA37A",
@@ -107,16 +107,16 @@ make_figure_theme <- function(
     )
 }
 
-project_dir <- "/Users/hiuchi/Dropbox/Research/covid/260309_analysis"
+project_dir <- "/path/to/data"
 data_dir <- file.path(project_dir, "multiqc_data")
 output_pdf <- build_figure_output(project_dir, "figure2.pdf")
 
-condition_order <- c("Mock", "Flu", "COVID")
+condition_order <- c("Mock", "Influenza", "COVID-19")
 series_order <- c("Young", "Aged")
 position_gaps <- list(time = 1, series = 2, condition = 5)
 
 figure_width <- 14
-figure_height <- 7.8
+figure_height <- 9.2
 
 read_multiqc_tsv <- function(filename) {
   readr::read_tsv(
@@ -172,12 +172,10 @@ build_axis_breaks <- function(sample_info) {
       x_break = mean(x_position),
     .groups = "drop"
   ) |>
-  mutate(axis_label = paste(series, time_label, sep = "\n"))
+  mutate(axis_label = paste(series, time_label))
 }
 
 panel_x_expand <- expansion(mult = c(0.01, 0.01))
-
-panel_x_scale_hidden <- scale_x_continuous(expand = panel_x_expand)
 
 panel_x_scale_grouped <- function(axis_breaks) {
   scale_x_continuous(
@@ -187,20 +185,13 @@ panel_x_scale_grouped <- function(axis_breaks) {
   )
 }
 
-theme_hide_x <- theme(
-  panel.grid.major.x = element_blank(),
-  axis.text.x = element_blank(),
-  axis.ticks.x = element_blank()
-)
-
 theme_grouped_x <- theme(
   panel.grid.major.x = element_blank(),
   axis.text.x = element_text(
-    angle = 0,
-    hjust = 0.5,
-    vjust = 1,
-    size = 8,
-    lineheight = 0.9
+    angle = 90,
+    hjust = 1,
+    vjust = 0.5,
+    size = 7
   )
 )
 
@@ -210,6 +201,11 @@ build_sample_info <- function(samples) {
       Sample = sample_id,
       series_code = coalesce(series_code, "other"),
       condition = coalesce(condition, "Unknown"),
+      condition = recode(
+        condition,
+        Flu = "Influenza",
+        COVID = "COVID-19"
+      ),
       time_label = coalesce(time_label, "NA"),
       replicate = coalesce(replicate, sample_id),
       series = coalesce(series, "Other"),
@@ -356,7 +352,7 @@ origin_long <- genomic_origin |>
   ) |>
   mutate(origin = factor(origin, levels = c("Exonic", "Intronic", "Intergenic")))
 
-origin_axis_breaks <- build_axis_breaks(sample_info)
+sample_axis_breaks <- build_axis_breaks(sample_info)
 
 coverage_summary <- coverage_profile |>
   group_by(condition, series, position) |>
@@ -372,7 +368,7 @@ p_depth <- ggplot(star_summary, aes(x_position, total_reads_m, fill = condition)
   geom_col(width = 0.85, colour = NA) +
   facet_grid(cols = vars(condition), scales = "free_x") +
   scale_fill_manual(values = condition_palette) +
-  panel_x_scale_hidden +
+  panel_x_scale_grouped(sample_axis_breaks) +
   guides(fill = "none") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.03))) +
   labs(
@@ -381,13 +377,13 @@ p_depth <- ggplot(star_summary, aes(x_position, total_reads_m, fill = condition)
     x = NULL
   ) +
   theme(legend.position = "none") +
-  theme_hide_x
+  theme_grouped_x
 
 p_alignment <- ggplot(star_summary, aes(x_position, uniquely_mapped_percent, colour = condition)) +
   geom_point(size = 1.8, alpha = 0.9) +
   facet_grid(cols = vars(condition), scales = "free_x") +
   scale_colour_manual(values = condition_palette) +
-  panel_x_scale_hidden +
+  panel_x_scale_grouped(sample_axis_breaks) +
   guides(colour = "none") +
   scale_y_continuous(
     limits = c(0, 100),
@@ -399,13 +395,13 @@ p_alignment <- ggplot(star_summary, aes(x_position, uniquely_mapped_percent, col
     x = NULL
   ) +
   theme(legend.position = "none") +
-  theme_hide_x
+  theme_grouped_x
 
 p_origin <- ggplot(origin_long, aes(x_position, percent, fill = origin)) +
   geom_col(width = 0.9, colour = NA) +
   facet_grid(cols = vars(condition), scales = "free_x", space = "free_x") +
   scale_fill_manual(values = origin_palette) +
-  panel_x_scale_grouped(origin_axis_breaks) +
+  panel_x_scale_grouped(sample_axis_breaks) +
   scale_y_continuous(
     expand = expansion(mult = c(0, 0.02)),
     labels = label_number(suffix = "%")
@@ -432,11 +428,12 @@ p_complexity <- ggplot(general_stats, aes(duplication_percent, dup_int, colour =
   geom_point(size = 2.3, alpha = 0.9) +
   scale_colour_manual(values = condition_palette) +
   scale_x_continuous(labels = label_number(suffix = "%")) +
+  scale_y_continuous(labels = label_percent(accuracy = 1)) +
   labs(
     title = "D Library complexity",
-    subtitle = paste0("Duplication vs dupInt, Pearson r = ", sprintf("%.2f", complexity_correlation)),
+    subtitle = paste0("Overall vs low-expression duplication, Pearson r = ", sprintf("%.2f", complexity_correlation)),
     x = "Duplication (%)",
-    y = "dupInt"
+    y = "Duplication rate at low expression (%)"
   )
 
 p_coverage <- ggplot() +
@@ -460,7 +457,6 @@ p_coverage <- ggplot() +
   ) +
   labs(
     title = "E Gene coverage profile",
-    subtitle = "Qualimap profile normalized to the per-sample mean coverage",
     x = "Gene body position (%)",
     y = "Relative coverage"
   ) +

@@ -8,8 +8,8 @@ library(tidyverse)
 figure_palettes <- list(
   infection = c(
     Mock = "#8A8A8A",
-    Flu = "#3C78B5",
-    COVID = "#D95A4E"
+    Influenza = "#3C78B5",
+    `COVID-19` = "#D95A4E"
   ),
   age = c(
     Young = "#2FA37A",
@@ -100,8 +100,8 @@ make_figure_theme <- function(
     )
 }
 
-input_dir <- "/Users/hiuchi/Dropbox/Research/covid/260305_analysis/res/star_salmon/deseq2_qc"
-project_dir <- "/Users/hiuchi/Dropbox/Research/covid/260309_analysis"
+project_dir <- "/path/to/data"
+input_dir <- file.path(project_dir, "res", "star_salmon", "deseq2_qc")
 output_pdf <- build_figure_output(project_dir, "figure3.pdf")
 figure_width <- 15
 figure_height <- 11.2
@@ -144,7 +144,11 @@ parse_sample_info <- function(samples) {
     transmute(
       sample = sample_id,
       age = factor(series, levels = c("Young", "Aged")),
-      infection = factor(condition, levels = c("Mock", "Flu", "COVID")),
+      infection = factor(
+        condition,
+        levels = c("Mock", "Flu", "COVID"),
+        labels = c("Mock", "Influenza", "COVID-19")
+      ),
       time = time_label,
       replicate = as.integer(replicate_num),
       time_hours

@@ -97,7 +97,11 @@ parse_sample_info <- function(samples) {
     filter(!is.na(age), infection != "", day != "") |>
     mutate(
       age = factor(age, levels = c("Young", "Aged")),
-      infection = factor(infection, levels = c("Mock", "Flu", "COVID")),
+      infection = factor(
+        infection,
+        levels = c("Mock", "Flu", "COVID"),
+        labels = c("Mock", "Influenza", "COVID-19")
+      ),
       day = factor(day, levels = c("6h", "1d", "2d", "4d", "6d", "8d", "10d"))
     )
 }
@@ -196,10 +200,9 @@ plot_timecourse <- function(plot_data, panel_label) {
     )
 }
 
-project_dir <- "/Users/hiuchi/Dropbox/Research/covid/260309_analysis"
-
-input_dir <- "/Users/hiuchi/Dropbox/Research/covid/260305_analysis/res/star_salmon/deseq2_qc"
-annotation_gff3 <- "/Users/hiuchi/Dropbox/Research/covid/260305_analysis/files/mouse_virus.gff3"
+project_dir <- "/path/to/data"
+input_dir <- file.path(project_dir, "res", "star_salmon", "deseq2_qc")
+annotation_gff3 <- file.path(project_dir, "files", "mouse_virus.gff3")
 plot_output_dir <- build_output_dir(project_dir, "plots")
 
 load(file.path(input_dir, "deseq2.dds.RData"))
@@ -209,7 +212,7 @@ normalized_counts <- counts(dds, normalized = TRUE)
 annotation <- read_gene_annotation(annotation_gff3)
 
 group_specs <- sample_info |>
-  filter(infection %in% c("Flu", "COVID")) |>
+  filter(infection %in% c("Influenza", "COVID-19")) |>
   distinct(age, infection, day) |>
   arrange(infection, age, day) |>
   transmute(
@@ -227,7 +230,7 @@ results <- purrr::pmap_dfr(
 ) |>
   mutate(
     age = factor(age, levels = c("Young", "Aged")),
-    infection = factor(infection, levels = c("Mock", "Flu", "COVID")),
+    infection = factor(infection, levels = c("Mock", "Influenza", "COVID-19")),
     day = factor(day, levels = c("6h", "1d", "2d", "4d", "6d", "8d", "10d")),
     type = factor(type, levels = c("mRNA", "lncRNA", "Others"))
   )
@@ -238,8 +241,8 @@ write_csv(results, build_data_output(project_dir, "lncRNA_timecourse_results.csv
 plot_data <- results |>
   filter(type %in% c("mRNA", "lncRNA"))
 
-flu_plot <- plot_timecourse(plot_data |> filter(infection == "Flu", !is.na(day)), "A  Flu")
-covid_plot <- plot_timecourse(plot_data |> filter(infection == "COVID", !is.na(day)), "B  COVID")
+flu_plot <- plot_timecourse(plot_data |> filter(infection == "Influenza", !is.na(day)), "A  Influenza")
+covid_plot <- plot_timecourse(plot_data |> filter(infection == "COVID-19", !is.na(day)), "B  COVID-19")
 
 figure5 <- ((flu_plot / covid_plot) + plot_layout(guides = "collect")) &
   theme(legend.position = "bottom")
