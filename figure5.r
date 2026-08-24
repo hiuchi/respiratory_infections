@@ -28,6 +28,66 @@ save_figure_pdf <- function(plot_obj, output_pdf, figure_width, figure_height) {
   )
 }
 
+blank_plot_cells <- function(figure_grob, component_prefix, cell_names) {
+  component_index <- which(
+    str_starts(figure_grob$layout$name, component_prefix) &
+      str_ends(figure_grob$layout$name, "-1")
+  )
+  component_grob <- figure_grob$grobs[[component_index]]
+  cell_indices <- which(component_grob$layout$name %in% cell_names)
+  component_grob$grobs[cell_indices] <- map(cell_indices, ~ grid::nullGrob())
+  figure_grob$grobs[[component_index]] <- component_grob
+  figure_grob
+}
+
+move_influenza_age_strips <- function(figure_grob) {
+  layout_names <- figure_grob$layout$name
+  panel_index <- which(
+    str_starts(layout_names, "panel;") & str_ends(layout_names, "-1")
+  )
+  strip_index <- which(
+    str_starts(layout_names, "strip-r-") & str_ends(layout_names, "-1")
+  )
+  panel_grob <- figure_grob$grobs[[panel_index]]
+  strip_grob <- figure_grob$grobs[[strip_index]]
+  strip_width <- figure_grob$widths[[figure_grob$layout$l[[strip_index]]]]
+  target_panel_names <- c("panel-6-1", "panel-6-2")
+  target_panel_indices <- match(target_panel_names, panel_grob$layout$name)
+  target_panel_column <- panel_grob$layout$l[[target_panel_indices[[1]]]]
+  panel_spacing <- panel_grob$widths[[target_panel_column - 1]]
+
+  wrap_strip <- function(strip_name) {
+    strip_cell <- strip_grob$grobs[[match(strip_name, strip_grob$layout$name)]]
+    grid::grobTree(
+      strip_cell,
+      vp = grid::viewport(
+        x = -panel_spacing,
+        width = strip_width,
+        just = "left"
+      )
+    )
+  }
+
+  panel_grob$grobs[[target_panel_indices[[1]]]] <-
+    wrap_strip("strip-r-1")
+  panel_grob$grobs[[target_panel_indices[[2]]]] <-
+    wrap_strip("strip-r-2")
+  panel_grob$layout$clip[target_panel_indices] <- "off"
+  figure_grob$grobs[[panel_index]] <- panel_grob
+  figure_grob$grobs[[strip_index]] <- grid::nullGrob()
+  figure_grob
+}
+
+remove_influenza_empty_facets <- function(figure_grob) {
+  figure_grob |>
+    blank_plot_cells(
+      "panel;",
+      c("panel-5-1", "panel-6-1", "panel-7-1", "panel-6-2", "panel-7-2")
+    ) |>
+    blank_plot_cells("axis-b-", c("axis-b-6", "axis-b-7")) |>
+    blank_plot_cells("strip-t-", c("strip-t-6", "strip-t-7"))
+}
+
 make_figure_theme <- function(
   base_size = 11,
   plot_title_size = base_size + 1,
@@ -97,7 +157,11 @@ parse_sample_info <- function(samples) {
     filter(!is.na(age), infection != "", day != "") |>
     mutate(
       age = factor(age, levels = c("Young", "Aged")),
-      infection = factor(infection, levels = c("Mock", "Flu", "COVID")),
+      infection = factor(
+        infection,
+        levels = c("Mock", "Flu", "COVID"),
+        labels = c("Mock", "Influenza", "COVID-19")
+      ),
       day = factor(day, levels = c("6h", "1d", "2d", "4d", "6d", "8d", "10d"))
     )
 }
@@ -209,7 +273,7 @@ normalized_counts <- counts(dds, normalized = TRUE)
 annotation <- read_gene_annotation(annotation_gff3)
 
 group_specs <- sample_info |>
-  filter(infection %in% c("Flu", "COVID")) |>
+  filter(infection %in% c("Influenza", "COVID-19")) |>
   distinct(age, infection, day) |>
   arrange(infection, age, day) |>
   transmute(
@@ -227,7 +291,7 @@ results <- purrr::pmap_dfr(
 ) |>
   mutate(
     age = factor(age, levels = c("Young", "Aged")),
-    infection = factor(infection, levels = c("Mock", "Flu", "COVID")),
+    infection = factor(infection, levels = c("Mock", "Influenza", "COVID-19")),
     day = factor(day, levels = c("6h", "1d", "2d", "4d", "6d", "8d", "10d")),
     type = factor(type, levels = c("mRNA", "lncRNA", "Others"))
   )
@@ -238,11 +302,15 @@ write_csv(results, build_data_output(project_dir, "lncRNA_timecourse_results.csv
 plot_data <- results |>
   filter(type %in% c("mRNA", "lncRNA"))
 
-flu_plot <- plot_timecourse(plot_data |> filter(infection == "Flu", !is.na(day)), "A  Flu")
-covid_plot <- plot_timecourse(plot_data |> filter(infection == "COVID", !is.na(day)), "B  COVID")
+flu_plot <- plot_timecourse(plot_data |> filter(infection == "Influenza", !is.na(day)), "A  Influenza")
+covid_plot <- plot_timecourse(plot_data |> filter(infection == "COVID-19", !is.na(day)), "B  COVID-19")
 
 figure5 <- ((flu_plot / covid_plot) + plot_layout(guides = "collect")) &
   theme(legend.position = "bottom")
+figure5 <- figure5 |>
+  patchworkGrob() |>
+  remove_influenza_empty_facets() |>
+  move_influenza_age_strips()
 
 save_figure_pdf(
   figure5,
