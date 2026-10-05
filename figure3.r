@@ -1,3 +1,5 @@
+set.seed(8)
+
 library(DESeq2)
 library(cowplot)
 library(ggdendro)
@@ -8,8 +10,8 @@ library(tidyverse)
 figure_palettes <- list(
   infection = c(
     Mock = "#8A8A8A",
-    Influenza = "#3C78B5",
-    `COVID-19` = "#D95A4E"
+    IAV = "#3C78B5",
+    `SARS-CoV-2` = "#D95A4E"
   ),
   age = c(
     Young = "#2FA37A",
@@ -147,7 +149,7 @@ parse_sample_info <- function(samples) {
       infection = factor(
         condition,
         levels = c("Mock", "Flu", "COVID"),
-        labels = c("Mock", "Influenza", "COVID-19")
+        labels = c("Mock", "IAV", "SARS-CoV-2")
       ),
       time = time_label,
       replicate = as.integer(replicate_num),
@@ -486,3 +488,5 @@ figure3 <- (top_row / dend_panel) +
   )
 
 save_figure_pdf(figure3, output_pdf, figure_width, figure_height)
+
+writeLines(capture.output(sessionInfo()), file.path(project_dir, "output", "figure3_session.txt"))

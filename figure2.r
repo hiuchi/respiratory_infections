@@ -1,3 +1,5 @@
+set.seed(8)
+
 library(tidyverse)
 library(patchwork)
 library(scales)
@@ -5,8 +7,8 @@ library(scales)
 figure_palettes <- list(
   infection = c(
     Mock = "#8A8A8A",
-    Influenza = "#3C78B5",
-    `COVID-19` = "#D95A4E"
+    IAV = "#3C78B5",
+    `SARS-CoV-2` = "#D95A4E"
   ),
   age = c(
     Young = "#2FA37A",
@@ -111,7 +113,7 @@ project_dir <- "/path/to/data"
 data_dir <- file.path(project_dir, "multiqc_data")
 output_pdf <- build_figure_output(project_dir, "figure2.pdf")
 
-condition_order <- c("Mock", "Influenza", "COVID-19")
+condition_order <- c("Mock", "IAV", "SARS-CoV-2")
 series_order <- c("Young", "Aged")
 position_gaps <- list(time = 1, series = 2, condition = 5)
 
@@ -203,8 +205,8 @@ build_sample_info <- function(samples) {
       condition = coalesce(condition, "Unknown"),
       condition = recode(
         condition,
-        Flu = "Influenza",
-        COVID = "COVID-19"
+        Flu = "IAV",
+        COVID = "SARS-CoV-2"
       ),
       time_label = coalesce(time_label, "NA"),
       replicate = coalesce(replicate, sample_id),
@@ -473,3 +475,5 @@ figure2 <- (left_column | right_column) +
   theme(legend.position = "top")
 
 save_figure_pdf(figure2, output_pdf, figure_width, figure_height)
+
+writeLines(capture.output(sessionInfo()), file.path(project_dir, "output", "figure2_session.txt"))

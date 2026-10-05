@@ -1,3 +1,5 @@
+set.seed(8)
+
 library(DESeq2)
 library(patchwork)
 library(scales)
@@ -120,6 +122,14 @@ heatmap_tile_width <- 0.95
 infection_levels <- c("Mock", "Flu", "COVID")
 age_levels <- c("Young", "Aged")
 
+plot_labels <- c(
+  Mock = "Mock",
+  Flu = "IAV",
+  COVID = "SARS-CoV-2",
+  Young = "Young",
+  Aged = "Aged"
+)
+
 condition_palette <- figure_palettes$infection
 age_palette <- figure_palettes$age
 heatmap_palette <- c(
@@ -129,7 +139,7 @@ heatmap_palette <- c(
 )
 
 module_titles <- c(
-  virus = "Influenza-COVID-19 difference genes",
+  virus = "IAV-SARS-CoV-2 difference genes",
   age = "Young-Aged difference genes"
 )
 
@@ -596,7 +606,8 @@ make_heatmap_plot <- function(
       rows = vars(pattern),
       cols = vars(panel_group),
       scales = "free",
-      space = "free"
+      space = "free",
+      labeller = labeller(panel_group = plot_labels)
     ) +
     scale_x_discrete(labels = heatmap_label_lookup, expand = expansion(mult = c(0, 0))) +
     scale_y_discrete(expand = expansion(mult = c(0, 0))) +
@@ -751,7 +762,10 @@ make_module_plot <- function(
           scales = "free_y",
           switch = "y"
         ) +
-        scale_colour_manual(values = condition_palette) +
+        scale_colour_manual(
+          values = condition_palette,
+          labels = plot_labels
+        ) +
         scale_x_discrete(limits = plot_time_levels, drop = FALSE) +
         expand_limits(y = 0) +
         scale_y_continuous(
@@ -818,7 +832,8 @@ make_module_plot <- function(
       rows = vars(row_label),
       cols = vars(infection),
       scales = "free_y",
-      switch = "y"
+      switch = "y",
+      labeller = labeller(infection = plot_labels)
     ) +
     scale_colour_manual(values = age_palette) +
     scale_x_discrete(limits = plot_time_levels, drop = FALSE) +
@@ -1029,3 +1044,5 @@ figure4 <- top_heatmaps / heatmap_legends / bottom_row +
   theme(plot.tag = element_text(size = 14, face = "bold"))
 
 save_figure_pdf(figure4, output_pdf, figure_width, figure_height)
+
+writeLines(capture.output(sessionInfo()), file.path(project_dir, "output", "figure4_session.txt"))
